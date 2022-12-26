@@ -11,20 +11,6 @@ const app: FastifyInstance = fastify({ logger: false });
 const auth = new Auth(path.resolve(PROJECTROOT, 'db', 'auth.sqlite3'));
 await auth.initialized();
 
-declare module 'fastify' {
-  interface FastifyReply {
-    ssr: boolean
-  }
-}
-app.decorateReply('ssr', false);
-app.addHook('onSend', async (request, reply, payload) => {
-  if (reply.ssr && typeof payload === 'string') {
-    return payload
-      .replaceAll('X-USERNAME', '');
-  }
-  return payload;
-});
-
 console.log(await auth.createUser('jonas', 'abc123'));
 
 app.register(fastifyStatic, {
