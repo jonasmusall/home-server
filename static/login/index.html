@@ -2,14 +2,24 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="https://vastivety.github.io/img/vastivety.ico">
-    <title>Test</title>
+    <link rel="stylesheet" href="/styles/main.css">
+    <script src="/scripts/lib/Session.js"></script>
+    <title>login</title>
   </head>
   <body>
-    <form action="/session" method="post">
-      <input name="username" type="text">
-      <input name="password" type="password">
-      <input type="submit" value="Log in">
-    </form>
+    <header>
+      <img class="darkmode-invert" src="/assets/icons/vastivety.svg">
+      <h1>login</h1>
+      <img class="darkmode-invert" src="/assets/icons/account_circle.svg">
+    </header>
+    <main>
+      <form action="/session" method="post">
+        <input name="username" type="text">
+        <input name="password" type="password">
+        <input type="submit" value="Log in">
+      </form>
+    </main>
   </body>
 </html>
