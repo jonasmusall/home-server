@@ -1,0 +1,67 @@
+:root {
+  --color-gray-xdark: #181818;
+  --color-gray-xlight: #dfdfdf;
+}
+
+html {
+  --color-background: var(--color-gray-xlight);
+  --color-foreground: black;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0px;
+
+  display: grid;
+  grid-template-columns: 1fr minmax();
+  padding: 0px;
+
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font: 20px serif;
+}
+
+header {
+  flex-grow: 0;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0.5em;
+}
+
+#path {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+#path > a {
+  color: var(--color-foreground);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+main {
+  flex-grow: 1;
+  box-sizing: content-box;
+  max-width: 10cm;
+  padding: auto 0px;
+}
+
+footer {
+  flex-grow: 0;
+
+  padding: 0.5em;
+
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    --color-background: var(--color-gray-xdark);
+    --color-foreground: white;
+  }
+}
