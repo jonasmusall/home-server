@@ -31,6 +31,19 @@ const sessionBodySchema = {
   }
 }
 
+interface IPasswordBody {
+  password: string,
+  newPassword: string
+}
+
+const passwordBodySchema = {
+  type: 'object',
+  properties: {
+    password: { type: 'string' },
+    newPassword: { type: 'string' }
+  }
+}
+
 const SESSION_TIMEOUT = 600; // 10 min (in s)
 
 export class Auth {
@@ -79,7 +92,10 @@ export class Auth {
       authInstance?: Auth,
       sessionPostUrl?: string,
       sessionFailureUrl?: string,
-      sessionSuccessUrl?: string
+      sessionSuccessUrl?: string,
+      logoutPostUrl?: string,
+      logoutRedirectUrl?: string,
+      passwordPostUrl?: string
     }
   ) {
     if (!options.authInstance) {
@@ -131,6 +147,7 @@ export class Auth {
             // assign user session to token
             await auth.assignSession(user.id, token);
             reply
+              .header('Set-Cookie', `app_user=${user.name}; Max-Age=${SESSION_TIMEOUT}; Secure; SameSite=Strict`)
               .header('Location', options.sessionSuccessUrl ?? '/')
               .send();
             return;
@@ -143,6 +160,24 @@ export class Auth {
         reply
           .header('Location', options.sessionFailureUrl ?? '/login')
           .send();
+      }
+    );
+
+    app.post(
+      options.logoutPostUrl ?? '/logout',
+      async (request, reply) => {
+        // TODO:
+        // get token cookie
+        // deleteSession
+      }
+    );
+
+    app.post<{
+      Body: IPasswordBody
+    }>(
+      options.passwordPostUrl ?? '/password',
+      { schema: { body: passwordBodySchema } },
+      async (request, reply) => {
       }
     );
   }
@@ -222,6 +257,18 @@ export class Auth {
     return user;
   }
 
+  async changeUserPassword(userid: number, newPassword: string): Promise<boolean> {
+    if (await this.db!.get(`SELECT id FROM users WHERE id = ${userid};`) === undefined) {
+      return false;
+    }
+    const salt = generateSalt();
+    const hash = sha256Hash(newPassword + salt);
+    await this.db!.run(`
+      UPDATE users SET salt = ${salt}, hash = ${hash} WHERE id = ${userid};
+    `);
+    return true;
+  }
+
   async deleteUser(): Promise<boolean> {
     // TODO: implementation
     return false;
@@ -239,7 +286,15 @@ export class Auth {
   }
 
   async verifySession(token: string): Promise<number | undefined> {
-    return undefined;
+    return (await this.db!.get(`
+      SELECT userid FROM sesssions WHERE token = "${token}";
+    `))?.userid;
+  }
+
+  async deleteSession(token: string): Promise<void> {
+    await this.db!.run(`
+      DELETE FROM sessions WHERE token = "${token}";
+    `);
   }
 
   /* -------- PRIVATE METHODS -------- */
@@ -254,6 +309,13 @@ export class Auth {
       `) !== undefined;
     } while (exists);
     return token;
+  }
+
+  private async purgeSessions(): Promise<void> {
+    const purgeBefore = nowSeconds() - SESSION_TIMEOUT;
+    await this.db!.run(`
+      DELETE FROM sessions WHERE ctime <= ${purgeBefore};
+    `);
   }
 }
 

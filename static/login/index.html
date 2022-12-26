@@ -5,19 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="https://vastivety.github.io/img/vastivety.ico">
     <link rel="stylesheet" href="/styles/main.css">
-    <script src="/scripts/lib/Session.js"></script>
+    <script type="module" src="/scripts/header.js"></script>
     <title>login</title>
   </head>
   <body>
     <header>
       <img class="darkmode-invert" src="/assets/icons/vastivety.svg">
       <h1>login</h1>
-      <img class="darkmode-invert" src="/assets/icons/account_circle.svg">
+      <a id="account-circle" href="/login"><img class="darkmode-invert" src="/assets/icons/account-circle.svg"></a>
     </header>
     <main>
       <form action="/session" method="post">
-        <input name="username" type="text">
-        <input name="password" type="password">
+        <table>
+          <tr>
+            <td><label>Username</label></td>
+            <td><input name="username" type="text"></td>
+          </tr>
+          <tr>
+            <td><label>Password</label></td>
+            <td><input name="password" type="password"></td>
+          </tr>
+        </table>
         <input type="submit" value="Log in">
       </form>
     </main>
