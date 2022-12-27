@@ -1,8 +1,16 @@
 import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { FastifyInstance, FastifyRequest } from 'fastify';
+import fp from 'fastify-plugin';
 import { IncomingMessage } from 'http';
+import { cookiePlugin } from './cookie.js';
 import { SqlDb } from './SqlDb.js';
 import { urlQueryToObject } from './util.js';
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    auth: () => Promise<number | undefined>
+  }
+}
 
 type User = {
   id: number,
@@ -102,6 +110,20 @@ export class Auth {
       return;
     }
     const auth = options.authInstance;
+
+    app.register(cookiePlugin);
+
+    app.decorateRequest(
+      'auth',
+      async function () {
+        this.parseCookies();
+        const token = this.cookies['app_ses'] as string | undefined;
+        if (token === undefined) {
+          return undefined;
+        }
+        return await auth.verifySession(token);
+      }
+    );
 
     // parse form POST requests
     app.addContentTypeParser(
@@ -320,6 +342,8 @@ export class Auth {
     `);
   }
 }
+
+export const authPlugin = fp(Auth.plugin);
 
 function nowSeconds(): number {
   return Math.floor(Date.now() / 1000);

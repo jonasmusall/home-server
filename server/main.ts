@@ -3,7 +3,7 @@ import * as fastifyStatic from '@fastify/static';
 import * as path from 'path';
 import { PROJECTROOT } from './lib/util.js';
 import { pingpong } from './api/pingpong.js';
-import { Auth } from './lib/auth.js';
+import { Auth, authPlugin } from './lib/auth.js';
 
 const PORT = 8888;
 
@@ -17,7 +17,7 @@ app.register(fastifyStatic, {
   root: path.resolve(PROJECTROOT, 'static')
 });
 
-app.register(Auth.plugin, {
+app.register(authPlugin, {
   authInstance: auth,
   sessionPostUrl: '/session',
   sessionFailureUrl: '/login',
