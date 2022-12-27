@@ -321,7 +321,7 @@ export class Auth {
     const salt = generateSalt();
     const hash = sha256Hash(newPassword + salt);
     await this.db!.run(`
-      UPDATE users SET salt = ${salt}, hash = ${hash} WHERE id = ${userid};
+      UPDATE users SET salt = "${salt}", hash = "${hash}" WHERE id = ${userid};
     `);
   }
 
