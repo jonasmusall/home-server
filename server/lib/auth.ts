@@ -314,7 +314,7 @@ export class Auth {
 
   async verifySession(token: string): Promise<number | undefined> {
     return (await this.db!.get(`
-      SELECT userid FROM sesssions WHERE token = "${token}";
+      SELECT userid FROM sessions WHERE token = "${token}";
     `))?.userid;
   }
 
