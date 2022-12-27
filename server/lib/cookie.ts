@@ -9,13 +9,13 @@ declare module 'fastify' {
   }
 }
 
-function plugin(app: FastifyInstance) {
+function plugin(app: FastifyInstance, options: {}, done: (err?: Error) => void) {
   app.addHook(
     'onRequest',
     async function (request) {
       request.cookies = {};
     }
-  )
+  );
 
   app.decorateRequest(
     'parseCookies',
@@ -27,6 +27,8 @@ function plugin(app: FastifyInstance) {
       }
     }
   );
+
+  done();
 }
 
 export const cookiePlugin = fp(plugin);

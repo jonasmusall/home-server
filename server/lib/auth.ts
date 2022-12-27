@@ -94,7 +94,7 @@ export class Auth {
 
   /* -------- FASTIFY PLUGIN -------- */
 
-  static async plugin(
+  static plugin(
     app: FastifyInstance,
     options: {
       authInstance: Auth,
@@ -104,7 +104,8 @@ export class Auth {
       logoutPostUrl?: string,
       logoutRedirectUrl?: string,
       passwordPostUrl?: string
-    }
+    },
+    done: (err?: Error) => void
   ) {
     if (!options.authInstance) {
       return;
@@ -204,6 +205,8 @@ export class Auth {
       async (request, reply) => {
       }
     );
+
+    done();
   }
 
   /* -------- PUBLIC METHODS -------- */
