@@ -163,6 +163,7 @@ export class Auth {
       }
     );
 
+    // POST: session deletion
     app.post(
       options.logoutPostUrl ?? '/logout',
       async (request, reply) => {
@@ -172,6 +173,7 @@ export class Auth {
       }
     );
 
+    // POST: password change
     app.post<{
       Body: IPasswordBody
     }>(
