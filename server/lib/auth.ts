@@ -8,7 +8,8 @@ import { urlQueryToObject } from './util.js';
 
 declare module 'fastify' {
   interface FastifyRequest {
-    auth: () => Promise<number | undefined>
+    getToken: () => string | undefined,
+    verifyToken: () => Promise<number | undefined>
   }
 }
 
@@ -103,7 +104,9 @@ export class Auth {
       sessionSuccessUrl?: string,
       logoutPostUrl?: string,
       logoutRedirectUrl?: string,
-      passwordPostUrl?: string
+      passwordPostUrl?: string,
+      passwordFailureUrl?: string,
+      passwordSuccessUrl?: string
     },
     done: (err?: Error) => void
   ) {
@@ -115,10 +118,17 @@ export class Auth {
     app.register(cookiePlugin);
 
     app.decorateRequest(
-      'auth',
-      async function () {
+      'getToken',
+      function (this: FastifyRequest) {
         this.parseCookies();
-        const token = this.cookies['app_ses'] as string | undefined;
+        return this.cookies?.app_ses;
+      }
+    )
+
+    app.decorateRequest(
+      'verifyToken',
+      async function (this: FastifyRequest) {
+        const token = this.getToken();
         if (token === undefined) {
           return undefined;
         }
@@ -190,9 +200,15 @@ export class Auth {
     app.post(
       options.logoutPostUrl ?? '/logout',
       async (request, reply) => {
-        // TODO:
-        // get token cookie
-        // deleteSession
+        const token = request.getToken();
+        if (token !== undefined) {
+          await auth.deleteSession(token);
+        }
+        reply.code(302)
+          .header('Location', options.logoutRedirectUrl ?? '/')
+          .header('Set-Cookie', 'app_ses=; Max-Age=0; Secure; HttpOnly; SameSite=Strict')
+          .header('Set-Cookie', 'app_user=; Max-Age=0; Secure; SameSite=Strict')
+          .send();
       }
     );
 
@@ -203,6 +219,23 @@ export class Auth {
       options.passwordPostUrl ?? '/password',
       { schema: { body: passwordBodySchema } },
       async (request, reply) => {
+        reply.code(302);
+        const userid = await request.verifyToken();
+        if (userid !== undefined) {
+          const user = (await auth.getUserById(userid))!;
+          // check password
+          const hash = sha256Hash(request.body.password + user.salt);
+          const hashABuf = Buffer.from(hash, 'utf8');
+          const hashBBuf = Buffer.from(user.hash, 'utf8');
+          if (timingSafeEqual(hashABuf, hashBBuf)) {
+            await auth.changeUserPassword(userid, request.body.newPassword);
+            reply.header('Location', options.passwordSuccessUrl ?? '/')
+              .send();
+            return;
+          }
+        }
+        reply.header('Location', options.passwordFailureUrl ?? '/')
+          .send();
       }
     );
 
@@ -284,16 +317,12 @@ export class Auth {
     return user;
   }
 
-  async changeUserPassword(userid: number, newPassword: string): Promise<boolean> {
-    if (await this.db!.get(`SELECT id FROM users WHERE id = ${userid};`) === undefined) {
-      return false;
-    }
+  async changeUserPassword(userid: number, newPassword: string): Promise<void> {
     const salt = generateSalt();
     const hash = sha256Hash(newPassword + salt);
     await this.db!.run(`
       UPDATE users SET salt = ${salt}, hash = ${hash} WHERE id = ${userid};
     `);
-    return true;
   }
 
   async deleteUser(): Promise<boolean> {

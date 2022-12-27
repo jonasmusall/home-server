@@ -24,8 +24,8 @@ app.register(authPlugin, {
 });
 
 app.get('/test', async (request, reply) => {
-  const userid = await request.auth();
-  if (userid) {
+  const userid = await request.verifyToken();
+  if (userid !== undefined) {
     reply.send(`Authenticated as ${(await auth.getUserById(userid))?.name}`);
   } else {
     reply.send('Not authenticated');
