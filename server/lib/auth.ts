@@ -89,7 +89,7 @@ export class Auth {
   static async plugin(
     app: FastifyInstance,
     options: {
-      authInstance?: Auth,
+      authInstance: Auth,
       sessionPostUrl?: string,
       sessionFailureUrl?: string,
       sessionSuccessUrl?: string,
