@@ -61,6 +61,20 @@ footer {
   padding: 0.5em;
 }
 
+.status-target {
+  display: none;
+}
+
+.status-target.status-success:target {
+  display: unset;
+  color: green;
+}
+
+.status-target.status-failure:target {
+  display: unset;
+  color: red;
+}
+
 @media (prefers-color-scheme: dark) {
   html {
     --color-background: var(--color-gray-xdark);

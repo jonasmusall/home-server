@@ -19,8 +19,10 @@ app.register(fastifyStatic, {
 app.register(authPlugin, {
   authInstance: auth,
   sessionPostUrl: '/session',
-  sessionFailureUrl: '/login',
-  sessionSuccessUrl: '/'
+  sessionFailureUrl: '/login#failure',
+  sessionSuccessUrl: '/',
+  passwordFailureUrl: '/account#failure',
+  passwordSuccessUrl: '/account#success'
 });
 
 app.get('/test', async (request, reply) => {
