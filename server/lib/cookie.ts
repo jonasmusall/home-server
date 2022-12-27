@@ -10,10 +10,12 @@ declare module 'fastify' {
 }
 
 function plugin(app: FastifyInstance) {
-  app.decorateRequest(
-    'cookies',
-    {}
-  );
+  app.addHook(
+    'onRequest',
+    async function (request) {
+      request.cookies = {};
+    }
+  )
 
   app.decorateRequest(
     'parseCookies',
