@@ -2,7 +2,6 @@ import fastify, { FastifyInstance } from 'fastify';
 import * as fastifyStatic from '@fastify/static';
 import * as path from 'path';
 import { PROJECTROOT } from './lib/util.js';
-import { pingpong } from './api/pingpong.js';
 import { Auth, authPlugin } from './lib/auth.js';
 
 const PORT = 8888;
@@ -24,7 +23,14 @@ app.register(authPlugin, {
   sessionSuccessUrl: '/'
 });
 
-app.register(pingpong);
+app.get('/test', async (request, reply) => {
+  const userid = await request.auth();
+  if (userid) {
+    reply.send(`Authenticated as ${(await auth.getUserById(userid))?.name}`);
+  } else {
+    reply.send('Not authenticated');
+  }
+});
 
 app.listen({ port: PORT }, (err, addr) => {
   if (err) throw err;
