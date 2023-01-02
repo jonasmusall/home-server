@@ -58,6 +58,7 @@ const SESSION_TIMEOUT = 600; // 10 min (in s)
 export class Auth {
   private initializedPromise: Promise<void>;
   public db?: SqlDb;
+  private sessionTimeoutDb?: SqlDb;
 
   constructor(dbPath: string) {
     this.initializedPromise = new Promise<void>(async (resolve, reject) => {
@@ -89,6 +90,20 @@ export class Auth {
           FOREIGN KEY (userid) REFERENCES users (id)
         );
       `);
+      // clear sessions on start
+      await this.db.run(`
+        DELETE FROM sessions;
+      `);
+
+      // setup session timeouts
+      this.sessionTimeoutDb = await SqlDb.open(':memory:');
+      await this.sessionTimeoutDb.run(`
+        CREATE TABLE sessionTimeouts (
+          token TEXT NOT NULL PRIMARY KEY,
+          asyncId INTEGER NOT NULL
+        );
+      `);
+
       resolve();
     });
   }
@@ -355,6 +370,10 @@ export class Auth {
     await this.db!.run(`
       INSERT INTO sessions (token, userid, ctime) VALUES ("${token}", ${userid ?? 'NULL'}, ${nowSeconds()});
     `);
+    const asyncId = Number(setTimeout(Auth.sessionTimeoutCallback, SESSION_TIMEOUT * 1000, this, token));
+    await this.sessionTimeoutDb!.run(`
+      INSERT INTO sessionTimeouts (token, asyncId) VALUES ("${token}", ${asyncId});
+    `);
   }
 
   async verifySession(token: string): Promise<number | undefined> {
@@ -364,9 +383,19 @@ export class Auth {
   }
 
   async deleteSession(token: string): Promise<void> {
+    console.log(`Deleting session ${token}`);
     await this.db!.run(`
       DELETE FROM sessions WHERE token = "${token}";
     `);
+    const asyncId = (await this.sessionTimeoutDb!.get(`
+      SELECT asyncId FROM sessionTimeouts WHERE token = "${token}";
+    `))?.asyncId as number | undefined;
+    if (asyncId !== undefined) {
+      clearTimeout(asyncId);
+      await this.sessionTimeoutDb!.run(`
+        DELETE FROM sessionTimeouts WHERE token = "${token}";
+      `);
+    }
   }
 
   /* -------- PRIVATE METHODS -------- */
@@ -383,11 +412,19 @@ export class Auth {
     return token;
   }
 
-  private async purgeSessions(): Promise<void> {
-    const purgeBefore = nowSeconds() - SESSION_TIMEOUT;
-    await this.db!.run(`
-      DELETE FROM sessions WHERE ctime <= ${purgeBefore};
+  private static async sessionTimeoutCallback(authInstance: Auth, token: string) {
+    console.log(`Session timeout ${token}`);
+    await authInstance.db!.run(`
+      DELETE FROM sessions WHERE token = "${token}";
     `);
+    const asyncId = (await authInstance.sessionTimeoutDb!.get(`
+      SELECT asyncId FROM sessionTimeouts WHERE token = "${token}";
+    `))?.asyncId as number | undefined;
+    if (asyncId !== undefined) {
+      await authInstance.sessionTimeoutDb!.run(`
+        DELETE FROM sessionTimeouts WHERE token = "${token}";
+      `);
+    }
   }
 }
 
