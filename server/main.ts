@@ -16,11 +16,13 @@ app.register(fastifyStatic, {
 
 app.register(authPlugin, {
   authInstance: auth,
-  sessionPostUrl: '/session',
   sessionFailureUrl: '/login#failure',
   sessionSuccessUrl: '/',
+  logoutRedirectUrl: '/',
   passwordFailureUrl: '/account#failure',
-  passwordSuccessUrl: '/account#success'
+  passwordSuccessUrl: '/account#success',
+  createFailureUrl: '/createUser.html#failure',
+  createSuccessUrl: '/createUser.html#success'
 });
 
 app.listen({ port: PORT }, (err, addr) => {

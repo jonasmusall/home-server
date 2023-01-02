@@ -99,16 +99,13 @@ export class Auth {
     app: FastifyInstance,
     options: {
       authInstance: Auth,
-      sessionPostUrl?: string,
-      sessionFailureUrl?: string,
-      sessionSuccessUrl?: string,
-      logoutPostUrl?: string,
-      logoutRedirectUrl?: string,
-      passwordPostUrl?: string,
-      passwordFailureUrl?: string,
-      passwordSuccessUrl?: string,
-      createFailureUrl?: string,
-      createSuccessUrl?: string
+      sessionFailureUrl: string,
+      sessionSuccessUrl: string,
+      logoutRedirectUrl: string,
+      passwordFailureUrl: string,
+      passwordSuccessUrl: string,
+      createFailureUrl: string,
+      createSuccessUrl: string
     },
     done: (err?: Error) => void
   ) {
@@ -158,7 +155,7 @@ export class Auth {
     app.post<{
       Body: ILoginBody
     }>(
-      options.sessionPostUrl ?? '/session',
+      '/api/auth/session',
       { schema: { body: loginBodySchema } },
       async (request, reply) => {
         // always create a token
@@ -183,7 +180,7 @@ export class Auth {
             await auth.assignSession(user.id, token);
             reply
               .header('Set-Cookie', `app_user=${user.name}; Max-Age=${SESSION_TIMEOUT}; Secure; SameSite=Strict`)
-              .header('Location', options.sessionSuccessUrl ?? '/')
+              .header('Location', options.sessionSuccessUrl)
               .send();
             return;
           }
@@ -193,21 +190,21 @@ export class Auth {
         // assign null session to token (for failed login check)
         await auth.assignSession(null, token);
         reply
-          .header('Location', options.sessionFailureUrl ?? '/login')
+          .header('Location', options.sessionFailureUrl)
           .send();
       }
     );
 
     // POST: session deletion
     app.post(
-      options.logoutPostUrl ?? '/logout',
+      '/api/auth/logout',
       async (request, reply) => {
         const token = request.getToken();
         if (token !== undefined) {
           await auth.deleteSession(token);
         }
         reply.code(302)
-          .header('Location', options.logoutRedirectUrl ?? '/')
+          .header('Location', options.logoutRedirectUrl)
           .header('Set-Cookie', 'app_ses=; Max-Age=0; Secure; HttpOnly; SameSite=Strict')
           .header('Set-Cookie', 'app_user=; Max-Age=0; Secure; SameSite=Strict')
           .send();
@@ -218,7 +215,7 @@ export class Auth {
     app.post<{
       Body: IPasswordBody
     }>(
-      options.passwordPostUrl ?? '/password',
+      '/api/auth/password',
       { schema: { body: passwordBodySchema } },
       async (request, reply) => {
         reply.code(302);
@@ -231,12 +228,12 @@ export class Auth {
           const hashBBuf = Buffer.from(user.hash, 'utf8');
           if (timingSafeEqual(hashABuf, hashBBuf)) {
             await auth.changeUserPassword(userid, request.body.newPassword);
-            reply.header('Location', options.passwordSuccessUrl ?? '/')
+            reply.header('Location', options.passwordSuccessUrl)
               .send();
             return;
           }
         }
-        reply.header('Location', options.passwordFailureUrl ?? '/')
+        reply.header('Location', options.passwordFailureUrl)
           .send();
       }
     );
