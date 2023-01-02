@@ -179,7 +179,7 @@ export class Auth {
         // always redirect and set token cookie
         reply
           .code(302)
-          .header('Set-Cookie', `app_ses=${token}; Max-Age=${SESSION_TIMEOUT}; Secure; HttpOnly; SameSite=Strict`);
+          .header('Set-Cookie', `app_ses=${token}; Max-Age=${SESSION_TIMEOUT}; Path=/; Secure; HttpOnly; SameSite=Strict`);
 
         // search for user in database
         const user = await auth.getUserByName(request.body.username);
@@ -194,7 +194,7 @@ export class Auth {
             // assign user session to token
             await auth.assignSession(user.id, token);
             reply
-              .header('Set-Cookie', `app_user=${user.name}; Max-Age=${SESSION_TIMEOUT}; Secure; SameSite=Strict`)
+              .header('Set-Cookie', `app_user=${user.name}; Max-Age=${SESSION_TIMEOUT}; Path=/; Secure; SameSite=Strict`)
               .header('Location', options.sessionSuccessUrl)
               .send();
             return;
@@ -220,8 +220,8 @@ export class Auth {
         }
         reply.code(302)
           .header('Location', options.logoutRedirectUrl)
-          .header('Set-Cookie', 'app_ses=; Max-Age=0; Secure; HttpOnly; SameSite=Strict')
-          .header('Set-Cookie', 'app_user=; Max-Age=0; Secure; SameSite=Strict')
+          .header('Set-Cookie', 'app_ses=; Max-Age=0; Path=/; Secure; HttpOnly; SameSite=Strict')
+          .header('Set-Cookie', 'app_user=; Max-Age=0; Path=/; Secure; SameSite=Strict')
           .send();
       }
     );
