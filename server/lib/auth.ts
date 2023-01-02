@@ -253,7 +253,7 @@ export class Auth {
         }
         reply.send();
       }
-    )
+    );
 
     done();
   }
