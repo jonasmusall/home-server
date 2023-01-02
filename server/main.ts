@@ -7,8 +7,7 @@ import { Auth, authPlugin } from './lib/auth.js';
 const PORT = 8888;
 
 const app: FastifyInstance = fastify({ logger: false });
-const auth = new Auth(path.resolve(PROJECTROOT, 'db', 'auth.sqlite3'));
-await auth.initialized();
+const auth = await Auth.new(path.resolve(PROJECTROOT, 'db', 'auth.sqlite3'));
 
 app.register(fastifyStatic, {
   root: path.resolve(PROJECTROOT, 'static')

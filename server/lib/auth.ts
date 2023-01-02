@@ -56,56 +56,57 @@ const passwordBodySchema = {
 const SESSION_TIMEOUT = 600; // 10 min (in s)
 
 export class Auth {
-  private initializedPromise: Promise<void>;
   public db?: SqlDb;
   private sessionTimeoutDb?: SqlDb;
 
-  constructor(dbPath: string) {
-    this.initializedPromise = new Promise<void>(async (resolve, reject) => {
-      // initialize database
-      this.db = await SqlDb.open(dbPath);
-      await this.db.run(`
-        CREATE TABLE IF NOT EXISTS meta (
-          zero INTEGER NOT NULL PRIMARY KEY,
-          nextuserid INTEGER NOT NULL
-        );
-      `);
-      await this.db.run(`
-        INSERT OR IGNORE INTO meta (zero, nextuserid) VALUES (0, 0);
-      `);
-      await this.db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER NOT NULL PRIMARY KEY,
-          name TEXT NOT NULL,
-          ctime INTEGER NOT NULL,
-          salt TEXT NOT NULL,
-          hash TEXT NOT NULL
-        );
-      `);
-      await this.db.run(`
-        CREATE TABLE IF NOT EXISTS sessions (
-          token TEXT NOT NULL PRIMARY KEY,
-          userid INTEGER,
-          ctime INTEGER NOT NULL,
-          FOREIGN KEY (userid) REFERENCES users (id)
-        );
-      `);
-      // clear sessions on start
-      await this.db.run(`
-        DELETE FROM sessions;
-      `);
+  private constructor() { }
 
-      // setup session timeouts
-      this.sessionTimeoutDb = await SqlDb.open(':memory:');
-      await this.sessionTimeoutDb.run(`
-        CREATE TABLE sessionTimeouts (
-          token TEXT NOT NULL PRIMARY KEY,
-          asyncId INTEGER NOT NULL
-        );
-      `);
+  public static async new(dbPath: string): Promise<Auth> {
+    const instance = new Auth();
 
-      resolve();
-    });
+    // initialize database
+    instance.db = await SqlDb.open(dbPath);
+    await instance.db.run(`
+      CREATE TABLE IF NOT EXISTS meta (
+        zero INTEGER NOT NULL PRIMARY KEY,
+        nextuserid INTEGER NOT NULL
+      );
+    `);
+    await instance.db.run(`
+      INSERT OR IGNORE INTO meta (zero, nextuserid) VALUES (0, 0);
+    `);
+    await instance.db.run(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER NOT NULL PRIMARY KEY,
+        name TEXT NOT NULL,
+        ctime INTEGER NOT NULL,
+        salt TEXT NOT NULL,
+        hash TEXT NOT NULL
+      );
+    `);
+    await instance.db.run(`
+      CREATE TABLE IF NOT EXISTS sessions (
+        token TEXT NOT NULL PRIMARY KEY,
+        userid INTEGER,
+        ctime INTEGER NOT NULL,
+        FOREIGN KEY (userid) REFERENCES users (id)
+      );
+    `);
+    // clear sessions on start
+    await instance.db.run(`
+      DELETE FROM sessions;
+    `);
+
+    // setup session timeouts
+    instance.sessionTimeoutDb = await SqlDb.open(':memory:');
+    await instance.sessionTimeoutDb.run(`
+      CREATE TABLE sessionTimeouts (
+        token TEXT NOT NULL PRIMARY KEY,
+        asyncId INTEGER NOT NULL
+      );
+    `);
+    
+    return instance;
   }
 
   /* -------- FASTIFY PLUGIN -------- */
@@ -274,10 +275,6 @@ export class Auth {
   }
 
   /* -------- PUBLIC METHODS -------- */
-
-  async initialized(): Promise<void> {
-    await this.initializedPromise;
-  }
 
   async getUserByName(username: string): Promise<User | undefined> {
     const result = await this.db!.get(`
