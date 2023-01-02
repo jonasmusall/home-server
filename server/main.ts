@@ -10,8 +10,6 @@ const app: FastifyInstance = fastify({ logger: false });
 const auth = new Auth(path.resolve(PROJECTROOT, 'db', 'auth.sqlite3'));
 await auth.initialized();
 
-console.log(await auth.createUser('jonas', 'abc123'));
-
 app.register(fastifyStatic, {
   root: path.resolve(PROJECTROOT, 'static')
 });
@@ -23,15 +21,6 @@ app.register(authPlugin, {
   sessionSuccessUrl: '/',
   passwordFailureUrl: '/account#failure',
   passwordSuccessUrl: '/account#success'
-});
-
-app.get('/test', async (request, reply) => {
-  const userid = await request.verifyToken();
-  if (userid !== undefined) {
-    reply.send(`Authenticated as ${(await auth.getUserById(userid))?.name}`);
-  } else {
-    reply.send('Not authenticated');
-  }
 });
 
 app.listen({ port: PORT }, (err, addr) => {
