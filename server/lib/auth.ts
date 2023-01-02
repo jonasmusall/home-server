@@ -27,12 +27,12 @@ type Session = {
   ctime: number
 }
 
-interface ISessionBody {
+interface ILoginBody {
   username: string,
   password: string
 }
 
-const sessionBodySchema = {
+const loginBodySchema = {
   type: 'object',
   properties: {
     username: { type: 'string' },
@@ -106,7 +106,9 @@ export class Auth {
       logoutRedirectUrl?: string,
       passwordPostUrl?: string,
       passwordFailureUrl?: string,
-      passwordSuccessUrl?: string
+      passwordSuccessUrl?: string,
+      createFailureUrl?: string,
+      createSuccessUrl?: string
     },
     done: (err?: Error) => void
   ) {
@@ -154,10 +156,10 @@ export class Auth {
 
     // POST: session initialization
     app.post<{
-      Body: ISessionBody
+      Body: ILoginBody
     }>(
       options.sessionPostUrl ?? '/session',
-      { schema: { body: sessionBodySchema } },
+      { schema: { body: loginBodySchema } },
       async (request, reply) => {
         // always create a token
         const token = await auth.generateSafeToken();
@@ -238,6 +240,23 @@ export class Auth {
           .send();
       }
     );
+
+    // POST: account creation
+    app.post<{
+      Body: ILoginBody
+    }>(
+      '/api/auth/create',
+      { schema: { body: loginBodySchema } },
+      async (request, reply) => {
+        reply.code(302);
+        if (await auth.createUser(request.body.username, request.body.password) === undefined) {
+          reply.header('Location', options.createFailureUrl);
+        } else {
+          reply.header('Location', options.createSuccessUrl);
+        }
+        reply.send();
+      }
+    )
 
     done();
   }
