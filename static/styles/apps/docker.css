@@ -1,0 +1,43 @@
+.docker-app-list {
+  list-style: none;
+  padding: 0px;
+}
+
+.docker-app-list > li {
+  display: flex;
+  align-items: center;
+  padding: 1em;
+  background-color: var(--color-surface);
+  border-radius: 1.2em;
+}
+
+.docker-app-list > li > .name{
+  margin-right: auto;
+}
+
+.docker-app-list > li > img {
+  display: none;
+  opacity: 0.4;
+}
+
+.docker-app-list > li > .status {
+  margin-left: 0.8em;
+  display: none;
+  opacity: 0.4;
+}
+
+.docker-app-list > li > button {
+  margin-left: 1.8em;
+}
+
+.docker-app-list > li.loading > img {
+  display: block;
+}
+
+.docker-app-list > li.loading > .status {
+  display: block;
+}
+
+.docker-app-list > li.loading > button {
+  display: none;
+}

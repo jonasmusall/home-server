@@ -77,7 +77,7 @@ button, input[type="button"], input[type="submit"], input[type="reset"] {
   color: var(--color-foreground);
   outline: none;
   border: none;
-  border-radius: 1em;
+  border-radius: 1.5em;
   font: inherit;
   font-size: 0.6em;
   cursor: pointer;
@@ -85,6 +85,11 @@ button, input[type="button"], input[type="submit"], input[type="reset"] {
 
 button:active, input[type="button"]:active, input[type="submit"]:active, input[type="reset"]:active {
   filter: brightness(0.8);
+}
+
+button.outlined, input[type="button"].outlined, input[type="submit"].outlined, input[type="reset"].outlined {
+  background: none;
+  border: 1px solid var(--color-foreground);
 }
 
 input[type="text"], input[type="password"] {

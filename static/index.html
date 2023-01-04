@@ -15,7 +15,19 @@
       <a id="account-circle" href="/login"><img class="darkmode-invert" src="/assets/icons/account-circle.svg"></a>
     </header>
     <main>
-      <h1>Hello world</h1>
+      <div class="app">
+        <script type="module" src="/scripts/apps/docker.js"></script>
+        <link rel="stylesheet" href="/styles/apps/docker.css">
+        <h1>docker containers</h1>
+        <h2>configured compose apps</h2>
+        <ul id="docker-apps-configured" class="docker-app-list">
+          <li><span class="name">minecraft-server</span><button class="outlined">run</button></li>
+        </ul>
+        <h2>running compose apps</h2>
+        <ul id="docker-apps-running" class="docker-app-list">
+          <li class="loading"><span class="name">minecraft-server</span><img src="/assets/icons/loading-spinner.svg"><span class="status">starting...</span><button class="outlined">attach</button><button class="outlined">stop</button></li>
+        </ul>
+      </div>
     </main>
   </body>
 </html>
