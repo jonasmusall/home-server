@@ -5,3 +5,5 @@ export function eventPromise(object: EventTarget, type: string) {
 export function $id(id: string) {
   return document.getElementById(id);
 }
+
+export const domContentPromise = eventPromise(window, 'DOMContentLoaded');
