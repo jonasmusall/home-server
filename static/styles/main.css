@@ -1,5 +1,8 @@
 :root {
   --color-gray-xdark: #181818;
+  --color-gray-dark: #454545;
+  --color-gray-medium: #7a7a7a;
+  --color-gray-light: #b6b6b6;
   --color-gray-xlight: #dfdfdf;
 }
 
@@ -10,6 +13,7 @@
 html {
   --color-background: var(--color-gray-xlight);
   --color-foreground: black;
+  --color-surface: var(--color-gray-light);
   --color-header-background: #eae5dbd6;
 }
 
@@ -21,7 +25,7 @@ body {
   align-items: center;
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font: 20px sans-serif;
+  font: 24px sans-serif;
 }
 
 header {
@@ -61,6 +65,38 @@ footer {
   padding: 0.5em;
 }
 
+input {
+  font: inherit;
+  font-size: 0.6em;
+}
+
+button, input[type="button"], input[type="submit"], input[type="reset"] {
+  min-width: 6em;
+  padding: 0.4em 2em;
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  outline: none;
+  border: none;
+  border-radius: 1em;
+  font: inherit;
+  font-size: 0.6em;
+  cursor: pointer;
+}
+
+button:active, input[type="button"]:active, input[type="submit"]:active, input[type="reset"]:active {
+  filter: brightness(0.8);
+}
+
+input[type="text"], input[type="password"] {
+  min-width: 10em;
+  padding: 0.4em 0.7em;
+  background: var(--color-surface);
+  color: var(--color-foreground);
+  outline: none;
+  border: none;
+  border-radius: 1em;
+}
+
 .status-target {
   display: none;
 }
@@ -79,6 +115,7 @@ footer {
   html {
     --color-background: var(--color-gray-xdark);
     --color-foreground: white;
+    --color-surface: var(--color-gray-dark);
     --color-header-background: #252422d6;
   }
 
