@@ -1,4 +1,3 @@
-import * as EventEmitter from 'events';
 import { GameApp } from './GameApp.js';
 
 export class MinecraftServer extends GameApp {

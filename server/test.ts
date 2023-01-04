@@ -1,4 +1,4 @@
-import { ComposeApp } from './apps/docker-apps/ComposeApp';
+import { ComposeApp } from './apps/docker-apps/ComposeApp.js';
 
 class DockerTest extends ComposeApp {
   name = 'test';
